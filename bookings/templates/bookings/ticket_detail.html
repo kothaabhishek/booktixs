@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Ticket — {{ booking.booking_id }}{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="ticket-detail-wrap">
+
+    <!-- Printable Ticket -->
+    <div class="printable-ticket" id="ticket-print">
+      <div class="ticket-header">
+        <span class="brand-icon">🎫</span>
+        <span class="ticket-brand">BookTix</span>
+        <span class="ticket-id-label">{{ booking.booking_id }}</span>
+      </div>
+
+      <div class="ticket-body">
+        <div class="ticket-left">
+          <h2>{{ booking.event.name }}</h2>
+          <div class="ticket-info-rows">
+            <div class="ticket-info-row">
+              <span class="ti-label">Date & Time</span>
+              <span class="ti-val">{{ booking.event.date|date:"D, d M Y — g:i A" }}</span>
+            </div>
+            <div class="ticket-info-row">
+              <span class="ti-label">Venue</span>
+              <span class="ti-val">{{ booking.event.venue }}, {{ booking.event.city }}</span>
+            </div>
+            <div class="ticket-info-row">
+              <span class="ti-label">Ticket Holder</span>
+              <span class="ti-val">{{ booking.user.get_full_name }}</span>
+            </div>
+            <div class="ticket-info-row">
+              <span class="ti-label">Category</span>
+              <span class="ti-val">{{ booking.get_category_display }}</span>
+            </div>
+            <div class="ticket-info-row">
+              <span class="ti-label">Quantity</span>
+              <span class="ti-val">{{ booking.qty }} Ticket(s)</span>
+            </div>
+            <div class="ticket-info-row">
+              <span class="ti-label">Amount Paid</span>
+              <span class="ti-val price-highlight">₹{{ booking.total_amount }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticket-divider">
+          <div class="notch top"></div>
+          <div class="dashed-line"></div>
+          <div class="notch bottom"></div>
+        </div>
+
+        <div class="ticket-right">
+          {% if booking.qr_code %}
+            <img src="{{ booking.qr_code.url }}" alt="QR Code" class="qr-large" />
+          {% else %}
+            <div class="qr-placeholder-lg">QR Generating…</div>
+          {% endif %}
+          <p class="qr-instruction">Scan at entry gate</p>
+          <span class="ticket-status-badge {% if booking.is_used %}used{% else %}valid{% endif %}">
+            {% if booking.is_used %}USED{% else %}VALID{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="ticket-footer">
+        Payment ID: {{ booking.razorpay_payment_id|default:"N/A" }} &nbsp;|&nbsp;
+        Booked: {{ booking.booked_at|date:"d M Y, g:i A" }}
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="ticket-actions-bar">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print Ticket</button>
+      <a href="{% url 'my_tickets' %}" class="btn btn-outline">← Back to My Tickets</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+  .navbar, .footer, .ticket-actions-bar, .breadcrumb { display: none !important; }
+  .printable-ticket { box-shadow: none !important; border: 2px solid #333 !important; }
+}
+</style>
+{% endblock %}

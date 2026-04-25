@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}BookTix — Event Ticket Booking{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="{% url 'event_list' %}" class="nav-brand">
+      <span class="brand-icon">🎫</span> BookTix
+    </a>
+    <div class="nav-links">
+      <a href="{% url 'event_list' %}" class="nav-link">Events</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'my_tickets' %}" class="nav-link">My Tickets</a>
+        <a href="{% url 'profile' %}" class="nav-link">
+          <span class="avatar-sm">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</span>
+          {{ user.first_name }}
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-outline btn-sm">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="nav-link">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Sign Up</a>
+      {% endif %}
+      {% if user.is_staff %}
+        <a href="/admin/" class="btn btn-danger btn-sm" target="_blank">Admin</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- ── Messages ── -->
+{% if messages %}
+<div class="messages-wrap container">
+  {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }}">
+      {{ msg }}
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── Main Content ── -->
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="brand-icon">🎫</span> <strong>BookTix</strong>
+      <p>India's easiest event ticket booking platform.</p>
+    </div>
+    <div class="footer-links">
+      <strong>Quick Links</strong>
+      <a href="{% url 'event_list' %}">Browse Events</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'my_tickets' %}">My Tickets</a>
+        <a href="{% url 'profile' %}">Profile</a>
+      {% else %}
+        <a href="{% url 'register' %}">Register</a>
+        <a href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </div>
+    <div class="footer-links">
+      <strong>Support</strong>
+      <a href="#">Help Center</a>
+      <a href="#">Contact Us</a>
+      <a href="#">Refund Policy</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      © 2025 BookTix. Powered by Django &amp; Razorpay.
+    </div>
+  </div>
+</footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

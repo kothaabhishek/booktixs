@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}My Tickets — BookTix{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <h1 class="page-title">My Tickets</h1>
+
+  {% if bookings %}
+    <div class="tickets-list">
+      {% for booking in bookings %}
+      <div class="ticket-row">
+        <div class="ticket-event-info">
+          <span class="event-tag event-tag-sm">{{ booking.event.category.name }}</span>
+          <h3>{{ booking.event.name }}</h3>
+          <p>📅 {{ booking.event.date|date:"D, d M Y — g:i A" }}</p>
+          <p>📍 {{ booking.event.venue }}, {{ booking.event.city }}</p>
+          <p>🎫 {{ booking.qty }}× {{ booking.get_category_display }} — <strong>₹{{ booking.total_amount }}</strong></p>
+          <code class="booking-id">{{ booking.booking_id }}</code>
+        </div>
+        <div class="ticket-qr">
+          {% if booking.qr_code %}
+            <img src="{{ booking.qr_code.url }}" alt="QR Code" class="qr-img" />
+          {% else %}
+            <div class="qr-placeholder">QR Pending</div>
+          {% endif %}
+          <span class="ticket-status {% if booking.is_used %}status-used{% else %}status-valid{% endif %}">
+            {% if booking.is_used %}✓ Used{% else %}✓ Valid{% endif %}
+          </span>
+        </div>
+        <div class="ticket-actions">
+          <a href="{% url 'ticket_detail' booking.booking_id %}" class="btn btn-outline btn-sm">View Details</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎫</div>
+      <h3>No tickets yet</h3>
+      <p>Book your first event and the ticket will appear here.</p>
+      <a href="{% url 'event_list' %}" class="btn btn-primary">Browse Events</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

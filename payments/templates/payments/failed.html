@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Payment Failed — BookTix{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="success-wrap">
+    <div class="success-icon">❌</div>
+    <h1 class="success-title" style="color:#dc3545">Payment Failed</h1>
+    <p class="success-sub">Something went wrong with your payment. No amount has been charged.</p>
+    <div class="success-actions">
+      <a href="{% url 'event_list' %}" class="btn btn-primary">Try Again</a>
+      <a href="{% url 'my_tickets' %}" class="btn btn-outline">My Tickets</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

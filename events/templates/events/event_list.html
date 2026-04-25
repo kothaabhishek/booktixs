@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Browse Events — BookTix{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1 class="hero-title">Find & Book Events Near You</h1>
+    <p class="hero-sub">Concerts, sports, comedy, theatre and more — all in one place.</p>
+    <form method="get" class="search-bar">
+      <input type="text" name="q" value="{{ search }}" placeholder="Search events, artists, venues…" class="search-input" />
+      <select name="city" class="search-select">
+        <option value="">All Cities</option>
+        <option value="hyderabad" {% if city == "hyderabad" %}selected{% endif %}>Hyderabad</option>
+        <option value="bangalore" {% if city == "bangalore" %}selected{% endif %}>Bangalore</option>
+        <option value="mumbai" {% if city == "mumbai" %}selected{% endif %}>Mumbai</option>
+        <option value="delhi" {% if city == "delhi" %}selected{% endif %}>Delhi</option>
+        <option value="chennai" {% if city == "chennai" %}selected{% endif %}>Chennai</option>
+      </select>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="section">
+  <div class="container">
+    <div class="category-pills">
+      <a href="{% url 'event_list' %}" class="pill {% if not selected_category %}pill-active{% endif %}">All</a>
+      {% for cat in categories %}
+        <a href="?category={{ cat.slug }}" class="pill {% if selected_category == cat.slug %}pill-active{% endif %}">
+          {{ cat.icon }} {{ cat.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Featured Events -->
+{% if featured and not search %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Featured Events</h2>
+    <div class="featured-grid">
+      {% for event in featured %}
+      <a href="{% url 'event_detail' event.pk %}" class="featured-card">
+        {% if event.image %}
+          <img src="{{ event.image.url }}" alt="{{ event.name }}" class="featured-img" />
+        {% else %}
+          <div class="featured-img-placeholder">{{ event.category.icon|default:"🎭" }}</div>
+        {% endif %}
+        <div class="featured-info">
+          <span class="event-tag">{{ event.category.name }}</span>
+          <h3>{{ event.name }}</h3>
+          <p>📅 {{ event.date|date:"D, d M Y — g:i A" }}</p>
+          <p>📍 {{ event.venue }}, {{ event.city }}</p>
+          <div class="featured-footer">
+            <span class="price-tag">From ₹{{ event.price_general }}</span>
+            <span class="seats-left {% if event.available_seats < 50 %}seats-low{% endif %}">
+              {{ event.available_seats }} seats left
+            </span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- All Events -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      {% if search %}Results for "{{ search }}"{% else %}All Upcoming Events{% endif %}
+      <span class="count-badge">{{ events.count }}</span>
+    </h2>
+    {% if events %}
+      <div class="events-grid">
+        {% for event in events %}
+        <a href="{% url 'event_detail' event.pk %}" class="event-card">
+          {% if event.image %}
+            <img src="{{ event.image.url }}" alt="{{ event.name }}" class="event-card-img" />
+          {% else %}
+            <div class="event-card-img-placeholder">{{ event.category.icon|default:"🎭" }}</div>
+          {% endif %}
+          <div class="event-card-body">
+            <span class="event-tag event-tag-sm">{{ event.category.name }}</span>
+            <h3 class="event-card-title">{{ event.name }}</h3>
+            <p class="event-meta">📅 {{ event.date|date:"d M Y, g:i A" }}</p>
+            <p class="event-meta">📍 {{ event.city }}</p>
+            <div class="event-card-footer">
+              <span class="price-tag">₹{{ event.price_general }}</span>
+              <div class="availability-bar" title="{{ event.available_seats }} seats">
+                <div class="availability-fill" style="width: {{ event.availability_percent }}%"></div>
+              </div>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No events found</h3>
+        <p>Try a different search term or browse all events.</p>
+        <a href="{% url 'event_list' %}" class="btn btn-primary">View All Events</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

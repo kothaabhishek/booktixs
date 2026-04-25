@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — BookTix{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <h1 class="page-title">My Profile</h1>
+  <div class="profile-layout">
+
+    <div class="profile-sidebar">
+      <div class="card text-center">
+        <div class="profile-avatar">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="Avatar" class="avatar-lg" />
+          {% else %}
+            <div class="avatar-lg avatar-initials">
+              {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+            </div>
+          {% endif %}
+        </div>
+        <h3>{{ request.user.get_full_name }}</h3>
+        <p class="text-muted">{{ request.user.email }}</p>
+        <div class="profile-stats">
+          <div class="stat-item">
+            <strong>{{ profile.total_bookings }}</strong>
+            <span>Bookings</span>
+          </div>
+          <div class="stat-item">
+            <strong>₹{{ profile.total_spent|floatformat:0 }}</strong>
+            <span>Spent</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <a href="{% url 'my_tickets' %}" class="btn btn-outline btn-block">🎫 My Tickets</a>
+      </div>
+    </div>
+
+    <div class="profile-main">
+      <div class="card">
+        <h3 class="card-title">Edit Profile</h3>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              {{ form.first_name }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              {{ form.last_name }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              {{ form.phone }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">City</label>
+              {{ form.city }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Profile Picture</label>
+            {{ form.avatar }}
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Book Tickets — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <nav class="breadcrumb">
+    <a href="{% url 'event_list' %}">Events</a> /
+    <a href="{% url 'event_detail' event.pk %}">{{ event.name }}</a> /
+    <span>Book Tickets</span>
+  </nav>
+
+  <div class="booking-layout">
+
+    <!-- Left: Form -->
+    <div class="booking-form-wrap">
+      <div class="card">
+        <h2 class="card-title">Select Your Tickets</h2>
+
+        {% if error %}
+          <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" id="booking-form">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label class="form-label">Ticket Category</label>
+            <div class="ticket-options">
+              <label class="ticket-option" for="cat-general">
+                <input type="radio" name="category" id="cat-general" value="general" checked onchange="updatePrice()" />
+                <div class="ticket-option-body">
+                  <strong>General</strong>
+                  <span>₹{{ event.price_general }}</span>
+                  <small>Standard entry</small>
+                </div>
+              </label>
+              {% if event.price_vip %}
+              <label class="ticket-option" for="cat-vip">
+                <input type="radio" name="category" id="cat-vip" value="vip" onchange="updatePrice()" />
+                <div class="ticket-option-body">
+                  <strong>VIP</strong>
+                  <span>₹{{ event.price_vip }}</span>
+                  <small>Premium access</small>
+                </div>
+              </label>
+              {% endif %}
+              {% if event.price_platinum %}
+              <label class="ticket-option" for="cat-platinum">
+                <input type="radio" name="category" id="cat-platinum" value="platinum" onchange="updatePrice()" />
+                <div class="ticket-option-body">
+                  <strong>Platinum</strong>
+                  <span>₹{{ event.price_platinum }}</span>
+                  <small>Exclusive access + perks</small>
+                </div>
+              </label>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="qty">Number of Tickets (max 10)</label>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+              <input type="number" name="qty" id="qty" value="1" min="1" max="10"
+                     class="qty-input" onchange="updatePrice()" />
+              <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Proceed to Payment →</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: Summary -->
+    <div class="booking-summary">
+      <div class="card">
+        <h3 class="card-title">Order Summary</h3>
+        <div class="summary-event">
+          <strong>{{ event.name }}</strong>
+          <p>📅 {{ event.date|date:"d M Y, g:i A" }}</p>
+          <p>📍 {{ event.venue }}</p>
+        </div>
+        <hr class="divider" />
+        <table class="summary-table">
+          <tr><td>Category</td><td id="s-cat">General</td></tr>
+          <tr><td>Tickets</td><td id="s-qty">× 1</td></tr>
+          <tr><td>Subtotal</td><td id="s-sub">₹0</td></tr>
+          <tr><td>Booking Fee (2%)</td><td id="s-fee">₹0</td></tr>
+          <tr><td>GST (18%)</td><td id="s-gst">₹0</td></tr>
+          <tr class="total-row"><td><strong>Total</strong></td><td><strong id="s-total">₹0</strong></td></tr>
+        </table>
+      </div>
+
+      <div class="trust-badges">
+        <span>🔒 Secure Payment</span>
+        <span>✉️ Instant QR Ticket</span>
+        <span>🛡️ Razorpay Protected</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const prices = {
+    general: {{ event.price_general }},
+    vip: {{ event.price_vip|default:0 }},
+    platinum: {{ event.price_platinum|default:0 }},
+  };
+
+  function getSelected() {
+    return document.querySelector('input[name="category"]:checked').value;
+  }
+  function changeQty(d) {
+    const el = document.getElementById('qty');
+    el.value = Math.min(10, Math.max(1, parseInt(el.value) + d));
+    updatePrice();
+  }
+  function updatePrice() {
+    const cat = getSelected();
+    const qty = parseInt(document.getElementById('qty').value) || 1;
+    const price = prices[cat] || prices.general;
+    const sub = price * qty;
+    const fee = (sub * 0.02).toFixed(2);
+    const gst = (sub * 0.18).toFixed(2);
+    const total = (sub + parseFloat(fee) + parseFloat(gst)).toFixed(2);
+    document.getElementById('s-cat').textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    document.getElementById('s-qty').textContent = '× ' + qty;
+    document.getElementById('s-sub').textContent = '₹' + sub.toLocaleString('en-IN');
+    document.getElementById('s-fee').textContent = '₹' + fee;
+    document.getElementById('s-gst').textContent = '₹' + gst;
+    document.getElementById('s-total').textContent = '₹' + parseFloat(total).toLocaleString('en-IN');
+  }
+  updatePrice();
+</script>
+{% endblock %}

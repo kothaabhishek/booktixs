@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — {{ booking.event.name }}{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="checkout-layout">
+
+    <div class="checkout-main">
+      <div class="card">
+        <h2 class="card-title">Complete Your Payment</h2>
+        <p class="text-muted">Booking ID: <strong>{{ booking.booking_id }}</strong></p>
+
+        <div class="checkout-details">
+          <div class="checkout-event-row">
+            <div>
+              <h3>{{ booking.event.name }}</h3>
+              <p>📅 {{ booking.event.date|date:"D, d M Y — g:i A" }}</p>
+              <p>📍 {{ booking.event.venue }}, {{ booking.event.city }}</p>
+              <p>🎫 {{ booking.qty }}× {{ booking.get_category_display }}</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <table class="summary-table">
+          <tr><td>Subtotal</td><td>₹{{ booking.subtotal }}</td></tr>
+          <tr><td>Booking Fee (2%)</td><td>₹{{ booking.booking_fee }}</td></tr>
+          <tr><td>GST (18%)</td><td>₹{{ booking.gst }}</td></tr>
+          <tr class="total-row"><td><strong>Total Payable</strong></td><td><strong class="price-highlight">₹{{ booking.total_amount }}</strong></td></tr>
+        </table>
+
+        <hr class="divider" />
+
+        <div class="payment-methods">
+          <p class="payment-label">Pay securely via Razorpay — supports:</p>
+          <div class="payment-icons">
+            <span class="pay-badge">UPI</span>
+            <span class="pay-badge">GPay</span>
+            <span class="pay-badge">PhonePe</span>
+            <span class="pay-badge">Debit Card</span>
+            <span class="pay-badge">Credit Card</span>
+            <span class="pay-badge">Net Banking</span>
+          </div>
+        </div>
+
+        <button id="pay-btn" class="btn btn-primary btn-block btn-lg" onclick="startPayment()">
+          Pay ₹{{ booking.total_amount }} →
+        </button>
+        <p class="widget-note text-center">🔒 Secured by Razorpay. Your data is encrypted.</p>
+      </div>
+    </div>
+
+    <div class="checkout-sidebar">
+      <div class="card card-muted">
+        <h4>What happens next?</h4>
+        <div class="steps-mini">
+          <div class="step-mini"><span class="step-num">1</span> Payment is verified instantly</div>
+          <div class="step-mini"><span class="step-num">2</span> QR ticket is generated</div>
+          <div class="step-mini"><span class="step-num">3</span> Ticket emailed to {{ request.user.email }}</div>
+          <div class="step-mini"><span class="step-num">4</span> Show QR at event entry</div>
+        </div>
+      </div>
+      <div class="card card-muted" style="margin-top:16px">
+        <h4>Cancellation Policy</h4>
+        <p class="text-muted text-sm">Full refund if cancelled 48 hours before the event. No refunds after that.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  function startPayment() {
+    document.getElementById('pay-btn').disabled = true;
+    document.getElementById('pay-btn').textContent = 'Opening payment…';
+
+    fetch("{% url 'create_order' booking.booking_id %}")
+      .then(r => r.json())
+      .then(data => {
+        const options = {
+          key: data.key,
+          amount: data.amount,
+          currency: data.currency,
+          name: data.name,
+          description: data.description,
+          order_id: data.order_id,
+          prefill: data.prefill,
+          theme: { color: '#6C63FF' },
+          handler: function(response) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'payment_callback' %}";
+            const fields = {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              csrfmiddlewaretoken: '{{ csrf_token }}'
+            };
+            for (const [k, v] of Object.entries(fields)) {
+              const el = document.createElement('input');
+              el.type = 'hidden'; el.name = k; el.value = v;
+              form.appendChild(el);
+            }
+            document.body.appendChild(form);
+            form.submit();
+          },
+          modal: {
+            ondismiss: function() {
+              document.getElementById('pay-btn').disabled = false;
+              document.getElementById('pay-btn').textContent = 'Pay ₹{{ booking.total_amount }} →';
+            }
+          }
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
+      })
+      .catch(err => {
+        alert('Failed to initiate payment. Please try again.');
+        document.getElementById('pay-btn').disabled = false;
+      });
+  }
+</script>
+{% endblock %}

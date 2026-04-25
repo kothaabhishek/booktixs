@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container section">
+    <div class="verify-wrap">
+        <div class="card {% if not valid %}card-error{% endif %}">
+            <div class="verify-header {% if valid %}bg-success{% else %}bg-danger{% endif %}">
+                <span class="verify-icon">
+                    {% if valid %}✅{% else %}❌{% endif %}
+                </span>
+                <h2>{% if valid %}Entry Allowed{% else %}Entry Denied{% endif %}</h2>
+            </div>
+            
+            <div class="verify-body">
+                <div class="status-message">
+                    <p class="{% if valid %}text-success{% else %}text-danger{% endif %}">{{ message }}</p>
+                </div>
+
+                {% if booking %}
+                <div class="booking-info">
+                    <div class="info-row">
+                        <span class="label">Attendee</span>
+                        <span class="value">{{ booking.user.get_full_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Event</span>
+                        <span class="value">{{ booking.event.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Category</span>
+                        <span class="value"><span class="event-tag">{{ booking.get_category_display }}</span></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Quantity</span>
+                        <span class="value">{{ booking.qty }} Ticket(s)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Booking ID</span>
+                        <span class="value text-monospace">{{ booking.booking_id }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="verify-footer">
+                    <a href="{% url 'event_list' %}" class="btn btn-primary btn-block">Back to Events</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .verify-wrap { max-width: 500px; margin: 40px auto; }
+    .verify-header { text-align: center; padding: 40px 20px; border-radius: var(--radius) var(--radius) 0 0; color: #fff; margin: -24px -24px 24px -24px; }
+    .bg-success { background: var(--accent); }
+    .bg-danger { background: var(--danger); }
+    .verify-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+    .verify-header h2 { font-family: var(--ff-head); font-size: 1.8rem; margin: 0; }
+    
+    .status-message { text-align: center; margin-bottom: 30px; font-weight: 600; font-size: 1.1rem; }
+    .text-success { color: var(--accent); }
+    .text-danger { color: var(--danger); }
+    
+    .booking-info { background: var(--gray-100); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 30px; }
+    .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray-200); }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .label { color: var(--gray-600); font-size: .85rem; }
+    .info-row .value { font-weight: 600; font-size: .95rem; }
+    .text-monospace { font-family: monospace; font-size: .8rem; }
+    
+    .verify-footer { margin-top: 20px; }
+    .card-error { border: 2px solid var(--danger); }
+</style>
+{% endblock %}

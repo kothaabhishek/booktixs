@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Payment Successful — BookTix{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="success-wrap">
+    <div class="success-icon">✅</div>
+    <h1 class="success-title">Payment Successful!</h1>
+    <p class="success-sub">Your tickets for <strong>{{ booking.event.name }}</strong> are confirmed.</p>
+
+    <div class="success-details card">
+      <div class="success-row">
+        <span>Booking ID</span>
+        <strong>{{ booking.booking_id }}</strong>
+      </div>
+      <div class="success-row">
+        <span>Event</span>
+        <strong>{{ booking.event.name }}</strong>
+      </div>
+      <div class="success-row">
+        <span>Date</span>
+        <strong>{{ booking.event.date|date:"D, d M Y — g:i A" }}</strong>
+      </div>
+      <div class="success-row">
+        <span>Tickets</span>
+        <strong>{{ booking.qty }}× {{ booking.get_category_display }}</strong>
+      </div>
+      <div class="success-row">
+        <span>Amount Paid</span>
+        <strong class="price-highlight">₹{{ booking.total_amount }}</strong>
+      </div>
+      <div class="success-row">
+        <span>Payment ID</span>
+        <strong>{{ booking.razorpay_payment_id }}</strong>
+      </div>
+    </div>
+
+    {% if booking.qr_code %}
+    <div class="success-qr">
+      <p>Your QR Ticket</p>
+      <img src="{{ booking.qr_code.url }}" alt="QR Code" class="qr-large" />
+      <p class="text-muted text-sm">Show this QR code at the event entry gate</p>
+    </div>
+    {% endif %}
+
+    <div class="success-actions">
+      <a href="{% url 'ticket_detail' booking.booking_id %}" class="btn btn-primary">View Full Ticket</a>
+      <a href="{% url 'event_list' %}" class="btn btn-outline">Browse More Events</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
